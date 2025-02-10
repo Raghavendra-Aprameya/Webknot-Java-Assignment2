@@ -2,6 +2,7 @@ package org.example;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MovieService {
     private List<Movie> movies = new ArrayList<>();
@@ -173,6 +174,44 @@ public class MovieService {
         if (!found) {
             System.out.println("No movies found for director: " + directorName);
         }
+    }
+    public void getMoviesByYearRange(int startYear, int endYear) {
+        movies.stream()
+                .filter(movie -> movie.getYear() >= startYear && movie.getYear() <= endYear)
+                .forEach(System.out::println);
+    }
+
+    public void addNewMovie(Movie movie) {
+        movies.add(movie);
+        System.out.println("Movie added successfully: " + movie);
+    }
+    public void updateMovieRating(int movieId, double newRating) {
+        for (Movie movie : movies) {
+            if (movie.getId() == movieId) {
+                movie.setRating(newRating);
+                System.out.println("Updated rating: " + movie);
+                return;
+            }
+        }
+        System.out.println("Movie not found.");
+    }
+    public void deleteMovie(int movieId) {
+        movies.removeIf(movie -> movie.getId() == movieId);
+        System.out.println("Movie deleted successfully.");
+    }
+    public void getSortedMoviesByReleaseYear() {
+        movies.stream()
+                .sorted(Comparator.comparingInt(Movie::getYear))
+                .limit(15)
+                .forEach(System.out::println);
+    }
+    public void getTop5DirectorsWithMostMovies() {
+        movies.stream()
+                .collect(Collectors.groupingBy(Movie::getDirectorId, Collectors.counting()))
+                .entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(5)
+                .forEach(entry -> System.out.println(directors.get(entry.getKey()).getName() + " - " + entry.getValue()));
     }
 
 }

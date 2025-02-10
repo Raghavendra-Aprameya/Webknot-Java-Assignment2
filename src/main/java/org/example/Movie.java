@@ -33,7 +33,7 @@ class Movie {
     public String getDuration() { return duration; }
     public int getDirectorId() { return directorId; }
     public int[] getActorIds() { return actorIds; }
-
+    public double setRating(double rating){ return this.rating=rating;}
 
     @Override
     public String toString() {
