@@ -33,10 +33,7 @@ class Movie {
     public String getDuration() { return duration; }
     public int getDirectorId() { return directorId; }
     public int[] getActorIds() { return actorIds; }
-
-    public void setTitle(String title) { this.title = title; }
-    public void setYear(int year) { this.year = year; }
-    public void setRating(double rating) { this.rating = rating; }
+    public double setRating(double rating){ return this.rating=rating;}
 
     @Override
     public String toString() {

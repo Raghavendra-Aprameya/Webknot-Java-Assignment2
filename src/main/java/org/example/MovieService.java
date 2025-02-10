@@ -2,9 +2,11 @@ package org.example;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MovieService {
     private List<Movie> movies = new ArrayList<>();
+    private List<Directors> directors = new ArrayList<>();
     private static final String FILE_PATH = "/Users/aprameyar/Desktop/Webknot/Week3/Java/JavaAssignment2/src/main/resources/movies_large.csv";
     private static final String DELIMITER = ",";
 
@@ -15,7 +17,31 @@ public class MovieService {
     }
     private void loadDirectorFromCSV()
     {
+        directors.clear();
+        try (BufferedReader br = new BufferedReader(new FileReader("/Users/aprameyar/Desktop/Webknot/Week3/Java/JavaAssignment2/src/main/resources/directors_large.csv"))) {
+            String line;
+            boolean firstLine = true;
 
+            while ((line = br.readLine()) != null) {
+                if (firstLine) {
+                    firstLine = false;
+                    continue;
+                }
+                String[] data = line.split(DELIMITER);
+
+//                if (data.length < ) continue;
+
+                int id = Integer.parseInt(data[0].trim());
+                String name = data[1].trim();
+
+                String dob = data[2].trim();
+                String nationality = data[3].trim();
+
+                directors.add(new Directors(id, name, dob, nationality));
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
     }
     // Load Movies from CSV
     private void loadMoviesFromCSV() {
@@ -69,8 +95,16 @@ public class MovieService {
     // Get Movie by Title
     public void getMovieInformation(String title) {
         for (Movie movie : movies) {
+//
             if (movie.getTitle().equalsIgnoreCase(title)) {
-                System.out.println(movie);
+                System.out.print(movie);
+                for(Directors director: directors)
+                {
+
+                    if(movie.getDirectorId()==director.getId())
+                        System.out.println(director.getName());
+                }
+
                 return;
             }
         }
@@ -100,4 +134,84 @@ public class MovieService {
             }
         }
     }
+    public void getMoviesByReleaseYear(int year)
+    {
+        for(Movie movie:movies)
+        {
+            if(movie.getYear()==year)
+            {
+                System.out.println(movie);
+            }
+        }
+    }
+    public void getMoviesByDirector(String directorName) {
+        int directorId = -1;
+
+        // Find the director ID and exit early
+        for (Directors director : directors) {
+            if (director.getName().equalsIgnoreCase(directorName)) {
+                directorId = director.getId();
+                break;  // Exit loop once found
+            }
+        }
+
+        // If director is not found, return early
+        if (directorId == -1) {
+            System.out.println("Director not found.");
+            return;
+        }
+
+        // Print movies directed by the found director
+        boolean found = false;
+        for (Movie movie : movies) {
+            if (movie.getDirectorId() == directorId) {
+                System.out.println(movie);
+                found = true;
+            }
+        }
+
+        // If no movies found for the director
+        if (!found) {
+            System.out.println("No movies found for director: " + directorName);
+        }
+    }
+    public void getMoviesByYearRange(int startYear, int endYear) {
+        movies.stream()
+                .filter(movie -> movie.getYear() >= startYear && movie.getYear() <= endYear)
+                .forEach(System.out::println);
+    }
+
+    public void addNewMovie(Movie movie) {
+        movies.add(movie);
+        System.out.println("Movie added successfully: " + movie);
+    }
+    public void updateMovieRating(int movieId, double newRating) {
+        for (Movie movie : movies) {
+            if (movie.getId() == movieId) {
+                movie.setRating(newRating);
+                System.out.println("Updated rating: " + movie);
+                return;
+            }
+        }
+        System.out.println("Movie not found.");
+    }
+    public void deleteMovie(int movieId) {
+        movies.removeIf(movie -> movie.getId() == movieId);
+        System.out.println("Movie deleted successfully.");
+    }
+    public void getSortedMoviesByReleaseYear() {
+        movies.stream()
+                .sorted(Comparator.comparingInt(Movie::getYear))
+                .limit(15)
+                .forEach(System.out::println);
+    }
+    public void getTop5DirectorsWithMostMovies() {
+        movies.stream()
+                .collect(Collectors.groupingBy(Movie::getDirectorId, Collectors.counting()))
+                .entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(5)
+                .forEach(entry -> System.out.println(directors.get(entry.getKey()).getName() + " - " + entry.getValue()));
+    }
+
 }
